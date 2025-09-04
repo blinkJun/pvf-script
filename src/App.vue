@@ -18,4 +18,11 @@ for (const path in modules) {
   width: 400px;
   margin-bottom: 20px;
 }
+.tips{
+  width:100%;
+  color:gray;
+  font-size:12px;
+  display:block;
+  margin:5px 0 0 0;
+}
 </style>

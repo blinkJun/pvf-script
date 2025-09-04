@@ -80,9 +80,29 @@ export const updateItemContent = async (path: string, content: string, port?: nu
   }
 }
 
-// 上传文件
+// 文件列表转为lst
 export const filListToLstRows = async (pathList: string[], port?: number) => {
   const res = await fetch(`${getApiHost(port)}/FileListToLstRows`, {
+    method: 'POST',
+    body: JSON.stringify(pathList),
+  })
+  const parseRes: BaseResponse = await res.json()
+  if (!parseRes.IsError) {
+    return parseRes.Data
+  } else {
+    console.log(parseRes.Msg)
+    ElMessage.error(parseRes.Msg)
+    return null
+  }
+}
+
+// 文件列表转为lst
+interface LstTypeId {
+  lstNames:string[]
+  ItemCodes:number[]
+}
+export const itemCodesToFileInfos = async (pathList: LstTypeId[], port?: number) => {
+  const res = await fetch(`${getApiHost(port)}/ItemCodesToFileInfos`, {
     method: 'POST',
     body: JSON.stringify(pathList),
   })
