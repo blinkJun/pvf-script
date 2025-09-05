@@ -51,6 +51,19 @@ export const getFileContent = async (path: string, port?: number) => {
   }
 }
 
+// 获取list文件内容
+export const getLstFileInfo = async (path: string, port?: number) => {
+  const res = await fetch(`${getApiHost(port)}/getLstFileInfo?filepath=${path}`)
+  const parseRes: BaseResponse<string> = await res.json()
+  if (!parseRes.IsError) {
+    return parseRes.Data
+  } else {
+    console.log(parseRes.Msg)
+    ElMessage.error(parseRes.Msg)
+    return ''
+  }
+}
+
 // 获取文件内容-JSON
 export const getFileContentData = async (path: string, port?: number) => {
   const res = await fetch(`${getApiHost(port)}/getFileData?filepath=${path}`)
@@ -101,10 +114,10 @@ interface LstTypeId {
   lstNames:string[]
   ItemCodes:number[]
 }
-export const itemCodesToFileInfos = async (pathList: LstTypeId[], port?: number) => {
+export const itemCodesToFileInfos = async (listData: LstTypeId, port?: number) => {
   const res = await fetch(`${getApiHost(port)}/ItemCodesToFileInfos`, {
     method: 'POST',
-    body: JSON.stringify(pathList),
+    body: JSON.stringify(listData),
   })
   const parseRes: BaseResponse = await res.json()
   if (!parseRes.IsError) {

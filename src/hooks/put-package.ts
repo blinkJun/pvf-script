@@ -31,7 +31,6 @@ export async function putPackages(files: string[], price: number, port: number) 
       ])
     }
   })
-  console.log(appendPackageList)
   if (appendPackageList.length > 0) {
     const newPackageTagContent = insertToTagEnd(
       storeContent,

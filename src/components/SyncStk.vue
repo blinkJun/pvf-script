@@ -38,6 +38,10 @@
           v-model="form.includeEqu"
           label="同步礼包内的物品（暂时只支持装备）"
         ></el-checkbox>
+        <!-- <el-checkbox
+          v-model="form.transformId"
+          label="转换国服ID"
+        ></el-checkbox> -->
       </el-form-item>
       <el-form-item>
         <el-button type="primary" :loading="loading" @click="onSubmit">同步</el-button>
@@ -52,6 +56,7 @@ import { getSelectedFiles, filListToLstRows, getFileContent,itemCodesToFileInfos
 import { matchTagContent, formatTagLine, insertToTagEnd } from '@/helpers/utils'
 import { ElNotification } from 'element-plus'
 import { putPackages } from '@/hooks/put-package'
+import { transformPackageAndEquId } from '@/hooks/transform-equ-id'
 defineOptions({
   name: '同步道具',
 })
@@ -60,28 +65,29 @@ const form = reactive({
   aPort: 27000,
   bPort: 27001,
   includeEqu: true,
+  transformId:true,
   price:3600
 })
 const formRules = reactive({})
 const formRef = ref(null)
-const onSubmit = async (putPackage) => {
+const onSubmit = async (putPackage:boolean) => {
   loading.value = true
   // 获取当前勾选的文件
   const files = await getSelectedFiles(form.aPort)
   let isPackage = false
-  const itemIds = []
+  const itemIds:number[] = []
   const itemFiles = []
 
   try {
     const updateRes = await Promise.all(
       files.map(async (fileItem) => {
-        const content = await getFileContent(fileItem)
+        let content = await getFileContent(fileItem)
         if(form.includeEqu){
           const packageContent = matchTagContent(content,'package data')
           if(packageContent){
             isPackage = true
             const itemList = formatTagLine(packageContent)
-            itemIds.push(...itemList.map(item=>item[0]))
+            itemIds.push(...itemList.map(item=>Number(item[0])))
           }
         }
         return updateItemContent(fileItem, content, form.bPort)
@@ -99,7 +105,7 @@ const onSubmit = async (putPackage) => {
         console.log(Object.keys(equFileRes.Infos).map(itemCode=>{
           return `${itemCode}\t${equFileRes.Infos[itemCode].FilePath}`
         }).join('\n'))
-        itemFiles.push(...Object.values(equFileRes.Infos).map(item=>item.FilePath))
+        itemFiles.push(...Object.values(equFileRes.Infos).map((item:any)=>item.FilePath))
       }
 
       const updateEquRes = await Promise.all(itemFiles.map(async fileItem=>{
@@ -129,12 +135,13 @@ const onSubmit = async (putPackage) => {
       duration: 0,
       type:'success'
     })
-    setTimeout(async () => {
-      if(putPackage&&isPackage){
-        await putPackages(files,form.price,form.bPort)
-      }
-      loading.value = false
-    }, 3000);
+    // setTimeout(async () => {
+    //   if(putPackage&&isPackage){
+    //     await putPackages(files,form.price,form.bPort)
+    //   }
+    //   await transformPackageAndEquId(form.bPort,files)
+    //   loading.value = false
+    // }, 3000);
   } catch (error) {
     console.log(error)
     ElNotification({
