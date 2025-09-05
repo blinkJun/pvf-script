@@ -103,7 +103,7 @@ const onSubmit = async (putPackage:boolean) => {
 
       if(equFileRes.Infos){
         console.log(Object.keys(equFileRes.Infos).map(itemCode=>{
-          return `${itemCode}\t${equFileRes.Infos[itemCode].FilePath}`
+          return `${itemCode}\t\`${equFileRes.Infos[itemCode].FilePath}\``
         }).join('\n'))
         itemFiles.push(...Object.values(equFileRes.Infos).map((item:any)=>item.FilePath))
       }
@@ -142,6 +142,7 @@ const onSubmit = async (putPackage:boolean) => {
     //   await transformPackageAndEquId(form.bPort,files)
     //   loading.value = false
     // }, 3000);
+    loading.value = false
   } catch (error) {
     console.log(error)
     ElNotification({

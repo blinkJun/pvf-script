@@ -31,7 +31,7 @@ import { transformPackageAndEquId } from '@/hooks/transform-equ-id'
 import { ElNotification } from 'element-plus'
 const loading = ref(false)
 const form = reactive({
-  port: 27000,
+  port: 27001,
 })
 const formRules = reactive({})
 const formRef = ref(null)

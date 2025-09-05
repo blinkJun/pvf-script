@@ -37,7 +37,7 @@ export async function transformPackageAndEquId(port:number,paths:string[]){
     }),
   )
 
-  let equLstContent = await getFileContent('equipment/equipment.lst')
+  let equLstContent = await getFileContent('equipment/equipment.lst',port)
   const equLstList = formatTagLine(equLstContent)
   itemIds.forEach(id=>{
     const newId = String(transformEquId(String(id)))
