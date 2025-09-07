@@ -43,7 +43,7 @@ const onSubmit = async () => {
   loading.value = true
   try {
     // 获取当前勾选的文件
-    const files = await getSelectedFiles()
+    const files = await getSelectedFiles(form.port)
     // 获取对应文件名
     await putPackages(files, form.price, form.port)
   } catch (error) {
