@@ -13,10 +13,10 @@ export async function transformPackageAndEquId(port:number,paths:string[]){
   let isPackage = false
   const itemIds:number[] = []
   // 获取当前勾选的文件
-  const files = await getSelectedFiles()
+  const files = await getSelectedFiles(port)
   const updateRes = await Promise.all(
     files.map(async (fileItem) => {
-      let content = await getFileContent(fileItem)
+      let content = await getFileContent(fileItem,port)
       const packageContent = matchTagContent(content,'package data')
       if(packageContent){
         isPackage = true

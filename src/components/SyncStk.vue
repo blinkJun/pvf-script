@@ -81,7 +81,7 @@ const onSubmit = async (putPackage:boolean) => {
   try {
     const updateRes = await Promise.all(
       files.map(async (fileItem) => {
-        let content = await getFileContent(fileItem)
+        let content = await getFileContent(fileItem,form.aPort)
         if(form.includeEqu){
           const packageContent = matchTagContent(content,'package data')
           if(packageContent){
@@ -109,7 +109,7 @@ const onSubmit = async (putPackage:boolean) => {
       }
 
       const updateEquRes = await Promise.all(itemFiles.map(async fileItem=>{
-        const content = await getFileContent(fileItem)
+        const content = await getFileContent(fileItem,form.aPort)
         return updateItemContent(fileItem, content, form.bPort)
       }))
     }
