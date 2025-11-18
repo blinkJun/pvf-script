@@ -1,0 +1,53 @@
+#PVF_File
+
+[name]
+	`一觉燃魂装扮 - 剑圣 - A`
+
+[grade]
+	1
+
+[rarity]
+	1
+
+[usable job]
+	`[swordman]`
+[/usable job]
+
+[attach type]
+	`[trade]`
+
+[minimum level]
+	1
+
+[icon mark]
+	`Item/IconMark.img`	64
+
+[icon]
+	`Item/stackable/cash.img`	608
+
+[stackable type]
+	`[usable cera package]`	0
+
+[move wav]
+	`BONE_TOUCH`
+
+[npc gift disallowance]
+	1
+
+[package data]
+	601550048	1
+	601560015	1
+	101570624	1
+	601520008	1
+	601500047	1
+	601510026	1
+	101530653	1
+	601540021	1
+[/package data]
+
+[suitable job]
+	`[swordman]`
+[/suitable job]
+
+[stack limit]
+	1
