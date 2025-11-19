@@ -14,7 +14,7 @@ function createPackageItem(fileConfig: any) {
 	2
 
 [usable job]
-	\`${fileConfig.usableJob}\`
+	${fileConfig.usableJob}
 [/usable job]
 
 [attach type]
@@ -47,7 +47,7 @@ ${fileConfig.avatarItems
 [/package data]
 
 [suitable job]
-	\`${fileConfig.usableJob}\`
+	${fileConfig.usableJob}
 [/suitable job]
 
 [stack limit]

@@ -72,7 +72,7 @@ const onSubmit = async () => {
         parseFiles.forEach((fileContent, index) => {
           const fileId = (form.fileNameIndex || 0) + allNewFile.length
           const newPath = `${form.newFilePath || basePath}/${fileId}.stk`
-          updateItemContent(newPath, fileContent, form.port)
+          updateItemContent(`stackable/${newPath}`, fileContent, form.port)
           allNewFile.push({
             id: fileId,
             newPath,
