@@ -44,7 +44,13 @@
 import { ElNotification } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { reactive, ref } from 'vue'
-import { getSelectedFiles, getItemsInfo, getFileContent, updateItemContent } from '@/api'
+import {
+  getSelectedFiles,
+  getItemsInfo,
+  getFileContent,
+  updateItemContent,
+  updateItemContentBatch,
+} from '@/api'
 import { matchTagContent, formatTagLine, insertToTagEnd } from '@/helpers/utils'
 import { transformPackage } from '@/hooks/transform-package'
 const loading = ref(false)
@@ -68,17 +74,26 @@ const onSubmit = async () => {
       files.map(async (item) => {
         const parseFiles = await transformPackage(item, form.port)
         const basePath = item.split('/').slice(1, -1).join('/')
-        console.log(parseFiles)
+        // console.log(parseFiles)
         parseFiles.forEach((fileContent, index) => {
           const fileId = (form.fileNameIndex || 0) + allNewFile.length
           const newPath = `${form.newFilePath || basePath}/${fileId}.stk`
-          updateItemContent(`stackable/${newPath}`, fileContent, form.port)
           allNewFile.push({
+            fileContent,
             id: fileId,
             newPath,
           })
         })
       }),
+    )
+    await updateItemContentBatch(
+      allNewFile.map(({ fileContent, newPath }) => {
+        return {
+          FilePath: `stackable/${newPath}`,
+          FileContent: fileContent,
+        }
+      }),
+      form.port,
     )
     const lstPath = 'stackable/stackable.lst'
     let lstContent = await getFileContent(lstPath, form.port)

@@ -104,12 +104,17 @@ export async function transformPackage(fileItem: string, port: number) {
       const typeName = typeOptions[typeIndex[0] + 1]
       const subTypeName =
         typeOptions[typeSetting[1] + typeIndex[0] * typeSetting[2] + typeIndex[1] + 2]
-
-      const usableJob = getUsableJob(typeName) || extractSecondLineValues(content, '[usable job]')
+      let name = `${fileName?.trim()?.slice(1, -1)}-${typeName}`
+      if (subTypeName) {
+        name += `-${subTypeName}`
+      }
+      name = `\`${name}\``
+      const usableJob =
+        `\`${getUsableJob(typeName)}\`` || extractSecondLineValues(content, '[usable job]')
       const icon = extractSecondLineValues(content, '[icon]')
       const iconMark = extractSecondLineValues(content, '[icon mark]')
       const fileData = {
-        name: `\`${fileName?.trim()?.slice(1, -1)}-${typeName}-${subTypeName}\``,
+        name,
         usableJob,
         typeIndex,
         icon,

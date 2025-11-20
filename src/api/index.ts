@@ -93,6 +93,26 @@ export const updateItemContent = async (path: string, content: string, port?: nu
   }
 }
 
+// 上传文件-批量
+interface FileDataItem {
+  FilePath: string
+  FileContent: string
+}
+export const updateItemContentBatch = async (data: FileDataItem[], port?: number) => {
+  const res = await fetch(`${getApiHost(port)}/ImportFiles`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+  const parseRes: BaseResponse = await res.json()
+  if (!parseRes.IsError) {
+    return true
+  } else {
+    console.log(parseRes.Msg)
+    ElMessage.error(parseRes.Msg)
+    return null
+  }
+}
+
 // 文件列表转为lst
 export const filListToLstRows = async (pathList: string[], port?: number) => {
   const res = await fetch(`${getApiHost(port)}/FileListToLstRows`, {
@@ -111,8 +131,8 @@ export const filListToLstRows = async (pathList: string[], port?: number) => {
 
 // 文件列表转为lst
 interface LstTypeId {
-  lstNames:string[]
-  ItemCodes:number[]
+  lstNames: string[]
+  ItemCodes: number[]
 }
 export const itemCodesToFileInfos = async (listData: LstTypeId, port?: number) => {
   const res = await fetch(`${getApiHost(port)}/ItemCodesToFileInfos`, {
