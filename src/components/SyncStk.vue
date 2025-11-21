@@ -3,6 +3,11 @@
     <template #header>
       <div>
         <span>同步勾选的文件 A 到 B</span>
+        <p class="tips">
+          如果是带有[package
+          data]标签的文件，则视为礼包，可以同时同步礼包内的物品，只支持装备、时装；
+          同步后请刷新装备、道具lst后保存，这样才是最新的列表。
+        </p>
       </div>
     </template>
     <el-form
@@ -29,10 +34,6 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-form-item label="上架价格">
-        <el-input-number v-model="form.price" :min="1" :step="1" :controls="true">
-        </el-input-number>
-      </el-form-item>
       <el-form-item label="其他选项">
         <el-checkbox
           v-model="form.includeEqu"
@@ -52,7 +53,14 @@
 </template>
 <script setup lang="ts">
 import { reactive, ref, defineOptions } from 'vue'
-import { getSelectedFiles, filListToLstRows, getFileContent,itemCodesToFileInfos,updateItemContent } from '@/api'
+import {
+  getSelectedFiles,
+  filListToLstRows,
+  getFileContent,
+  itemCodesToFileInfos,
+  updateItemContent,
+  updateItemContentBatch,
+} from '@/api'
 import { matchTagContent, formatTagLine, insertToTagEnd } from '@/helpers/utils'
 import { ElNotification } from 'element-plus'
 import { putPackages } from '@/hooks/put-package'
@@ -65,83 +73,98 @@ const form = reactive({
   aPort: 27000,
   bPort: 27001,
   includeEqu: true,
-  transformId:true,
-  price:3600
+  transformId: true,
 })
 const formRules = reactive({})
 const formRef = ref(null)
-const onSubmit = async (putPackage:boolean) => {
+const onSubmit = async (putPackage: boolean) => {
   loading.value = true
   // 获取当前勾选的文件
   const files = await getSelectedFiles(form.aPort)
   let isPackage = false
-  const itemIds:number[] = []
+  const itemIds: number[] = []
   const itemFiles = []
 
   try {
-    const updateRes = await Promise.all(
+    const updateData = await Promise.all(
       files.map(async (fileItem) => {
-        let content = await getFileContent(fileItem,form.aPort)
-        if(form.includeEqu){
-          const packageContent = matchTagContent(content,'package data')
-          if(packageContent){
+        let content = await getFileContent(fileItem, form.aPort)
+        if (form.includeEqu) {
+          const packageContent = matchTagContent(content, 'package data')
+          if (packageContent) {
             isPackage = true
             const itemList = formatTagLine(packageContent)
-            itemIds.push(...itemList.map(item=>Number(item[0])))
+            itemIds.push(...itemList.map((item) => Number(item[0])))
           }
         }
-        return updateItemContent(fileItem, content, form.bPort)
+        return {
+          FilePath: fileItem,
+          FileContent: content,
+        }
+      }),
+    )
+    await updateItemContentBatch(updateData, form.bPort)
+
+    if (isPackage) {
+      const equFileRes = await itemCodesToFileInfos(
+        {
+          lstNames: itemIds.map((item) => 'equipment'),
+          ItemCodes: itemIds,
+        },
+        form.aPort,
+      )
+
+      if (equFileRes.Infos) {
+        console.log(
+          Object.keys(equFileRes.Infos)
+            .map((itemCode) => {
+              return `${itemCode}\t\`${equFileRes.Infos[itemCode].FilePath}\``
+            })
+            .join('\n'),
+        )
+        itemFiles.push(...Object.values(equFileRes.Infos).map((item: any) => item.FilePath))
+      }
+
+      const updateEquData = await Promise.all(
+        itemFiles.map(async (fileItem) => {
+          const content = await getFileContent(fileItem, form.aPort)
+          return {
+            FilePath: fileItem,
+            FileContent: content,
+          }
+        }),
+      )
+      await updateItemContentBatch(updateEquData, form.bPort)
+    }
+
+    // 获取对应lst
+    const listRows = await filListToLstRows([...files, ...itemFiles], form.aPort)
+    const updateLstData = await Promise.all(
+      Object.keys(listRows).map(async (lstPath) => {
+        let lstContent = await getFileContent(lstPath, form.bPort)
+        let fileLstContent = ''
+
+        for (let id in listRows[lstPath]) {
+          const filePath = listRows[lstPath][id]
+          fileLstContent += `${id}\t\`${filePath}\`\r\n`
+        }
+        const newContent = lstContent + fileLstContent
+        return {
+          FilePath: lstPath,
+          FileContent: newContent,
+        }
       }),
     )
 
-    if(isPackage){
-      const equFileRes = await itemCodesToFileInfos({
-        lstNames:itemIds.map(item=>'equipment'),
-        ItemCodes:itemIds
-      },form.aPort)
-
-
-      if(equFileRes.Infos){
-        console.log(Object.keys(equFileRes.Infos).map(itemCode=>{
-          return `${itemCode}\t\`${equFileRes.Infos[itemCode].FilePath}\``
-        }).join('\n'))
-        itemFiles.push(...Object.values(equFileRes.Infos).map((item:any)=>item.FilePath))
-      }
-
-      const updateEquRes = await Promise.all(itemFiles.map(async fileItem=>{
-        const content = await getFileContent(fileItem,form.aPort)
-        return updateItemContent(fileItem, content, form.bPort)
-      }))
-    }
-
-
-    // 获取对应lst
-    const listRows = await filListToLstRows([...files,...itemFiles], form.aPort)
-    const updateLstRes = await Promise.all(Object.keys(listRows).map(async lstPath=>{
-      let lstContent = await getFileContent(lstPath,form.bPort)
-      let fileLstContent = ''
-
-      for(let id in listRows[lstPath]){
-        const filePath = listRows[lstPath][id]
-        fileLstContent += `${id}\t\`${filePath}\`\r\n`
-      }
-      const newContent = lstContent + fileLstContent
-      return updateItemContent(lstPath, newContent, form.bPort)
-    }))
+    console.log(updateLstData)
+    await updateItemContentBatch(updateLstData, form.bPort)
 
     ElNotification({
       title: '提示',
       message: '同步成功',
       duration: 0,
-      type:'success'
+      type: 'success',
     })
-    // setTimeout(async () => {
-    //   if(putPackage&&isPackage){
-    //     await putPackages(files,form.price,form.bPort)
-    //   }
-    //   await transformPackageAndEquId(form.bPort,files)
-    //   loading.value = false
-    // }, 3000);
     loading.value = false
   } catch (error) {
     console.log(error)
@@ -149,7 +172,7 @@ const onSubmit = async (putPackage:boolean) => {
       title: '提示',
       message: '同步失败',
       duration: 0,
-      type:'error'
+      type: 'error',
     })
     loading.value = false
   }

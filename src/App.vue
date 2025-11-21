@@ -16,13 +16,14 @@ for (const path in modules) {
 <style>
 .el-card {
   width: 400px;
-  margin-bottom: 20px;
+  margin: 20px;
+  float: left;
 }
-.tips{
-  width:100%;
-  color:gray;
-  font-size:12px;
-  display:block;
-  margin:5px 0 0 0;
+.tips {
+  width: 100%;
+  color: gray;
+  font-size: 12px;
+  display: block;
+  margin: 5px 0 0 0;
 }
 </style>

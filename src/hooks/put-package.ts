@@ -66,3 +66,39 @@ export async function putPackages(files: string[], price: number, port: number) 
     })
   }
 }
+
+// 按当前排列的顺序，重新生成下标，以最小的下标开始
+export async function sortStorePackages(port: number) {
+  const storeContent = await getFileContent('etc/newcashshop.etc', port)
+  const packageList = formatTagLine(matchTagContent(storeContent, 'package'))
+  let minIndex = Math.min(...packageList.map((item) => Number(item[0])))
+  packageList.forEach((item, index) => {
+    item[0] = String(minIndex + index)
+  })
+  const newPackageTagContent = insertToTagEnd(
+    storeContent,
+    'package',
+    `\t${packageList
+      .map((item) => {
+        return item.join('\t')
+      })
+      .join('\r\n\t')}`,
+    false,
+  )
+  const success = await updateItemContent('etc/newcashshop.etc', newPackageTagContent, port)
+  if (success) {
+    ElNotification({
+      title: '提示',
+      message: '排序成功',
+      duration: 0,
+      type: 'success',
+    })
+  } else {
+    ElNotification({
+      title: '提示',
+      message: '排序失败',
+      duration: 0,
+      type: 'error',
+    })
+  }
+}

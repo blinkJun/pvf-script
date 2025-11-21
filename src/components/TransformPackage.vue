@@ -3,6 +3,9 @@
     <template #header>
       <div>
         <span>将多选礼包转换为单个礼包（A pvf 到 B pvf）</span>
+        <p class="tips">
+          礼包通常有两种，一种是具有多个类型选择，根据类型提供对应的装备时装让玩家选择；另一种是无类型选择，提供所有装备道具，玩家打开即可获取全部；第一种可让所有职业使用，自行选择对应的道具装备，方便作为同一个奖励给玩家，但是上架到商城礼包内，无法识别里面的时装，不能在商城预览；而第二种就是分散的，对应单个角色的礼包，只包含此角色能装备的一套时装，在商城上架后，可以被识别预览出完整的套装；商城礼包界面的预览是一个非常重要的功能，不能浪费，所以需要此功能将多选礼包转换为对应角色的单个礼包，然后上架商城
+        </p>
       </div>
     </template>
     <el-form
@@ -16,7 +19,7 @@
       <el-form-item label="端口">
         <el-input-number v-model="form.port" :min="1" :step="1" :controls="true"> </el-input-number>
       </el-form-item>
-      <el-form-item label="起始文件名（递增）" label-width="150" prop="fileNameIndex">
+      <el-form-item label="起始ID" prop="fileNameIndex">
         <el-input-number
           v-model="form.fileNameIndex"
           :min="1"
@@ -25,6 +28,7 @@
           style="width: 200px"
         >
         </el-input-number>
+        <p class="tips">被递增更新到lst，同样作为礼包的文件名</p>
       </el-form-item>
       <el-form-item label="指定路径" prop="newFilePath">
         <el-input
