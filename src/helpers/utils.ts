@@ -6,6 +6,32 @@ const jobMap = [
   ['暗夜', '[at thief]', '[thief]', 2],
   ['圣职', '[at priest]', '[priest]', 2],
 ]
+const equMap = [
+  ['hair avatar','头发'],
+  ['aurora avatar','光环'],
+  ['waist avatar','腰部'],
+  ['hat avatar','头部'],
+  ['coat avatar','上衣'],
+  ['face avatar','脸部'],
+  ['breast avatar','胸部'],
+  ['pants avatar','下装'],
+  ['shoes avatar','鞋'],
+  ['skin avatar','皮肤'],
+]
+
+export function getEquTypeName(content:string){
+  const type = formatLine(extractSecondLineValues(content,'[equipment type]') || '')[0]
+  const match = equMap.find(item=>item[0] === type.slice(2,-2))
+  return match?match[1]:null
+}
+
+export function replaceOneTagContent(originalText:string, bracketContent:string, newContent:string) {
+  // 动态构建匹配模式，根据传入的中括号内容
+  const pattern = new RegExp(`(\\[${bracketContent}\\]\\s*\\n\\s*)\`([^\`]*)\``);
+
+  // 替换内容，保留第一行结构，只替换反引号内的内容
+  return originalText.replace(pattern, `$1\`${newContent}\``);
+}
 
 export function getUsableJob(jobName: string) {
   const matchJobInfo =
@@ -52,12 +78,14 @@ export function matchTagContent(input: string, tagName: string) {
   return match ? match[1].trim() : ''
 }
 
+export function formatLine(content:string){
+  return content.trim().split('\t')
+}
 export function formatTagLine(content: string) {
   return content
     .split('\n')
-    .map((line) => line.trim())
     .filter((line) => line.length > 0)
-    .map((item) => item.split('\t'))
+    .map((line) => formatLine(line))
 }
 
 export function reverseFormatTagLine(result: string[][]) {
