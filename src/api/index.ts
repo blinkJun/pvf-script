@@ -22,6 +22,19 @@ export const getSelectedFiles = async (port?: number) => {
   }
 }
 
+// 批量获取选中文件
+export const getSelectedFilesBySearchResult = async (port?: number) => {
+  const res = await fetch(`${getApiHost(port)}/GetSearchPanelSelectedFiles`)
+  const parseRes: BaseResponse<string[]> = await res.json()
+  if (!parseRes.IsError) {
+    return parseRes.Data
+  } else {
+    console.log(parseRes.Msg)
+    ElMessage.error(parseRes.Msg)
+    return []
+  }
+}
+
 // 批量获取物品信息
 export const getItemsInfo = async (paths: string[], port?: number) => {
   const res = await fetch(`${getApiHost(port)}/GetItemInfos`, {

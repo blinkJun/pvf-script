@@ -18,11 +18,10 @@ import {
 } from '@/helpers/utils'
 import { ElNotification } from 'element-plus'
 
-export async function setEquNameByPackage(port: number, paths: string[]) {
+export async function setEquNameByPackage(port: number, files: string[]) {
   let isPackage = false
   const itemIds: number[] = []
   // 获取当前勾选的文件
-  const files = await getSelectedFiles(port)
   const itemFiles: { filePath: string; packageName: string }[] = []
   await Promise.all(
     files.map(async (fileItem) => {

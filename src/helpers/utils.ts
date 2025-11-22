@@ -18,7 +18,12 @@ const equMap = [
   ['shoes avatar','鞋'],
   ['skin avatar','皮肤'],
 ]
+const rarityMap = ['普通','高级','稀有','神器','史诗','勇者','传说','神话']
 
+export function getEquRarityName(content:string){
+  const typeValue = Number(formatLine(extractSecondLineValues(content,'[rarity]') || '')[0])
+  return rarityMap[typeValue || 0]
+}
 export function getEquTypeName(content:string){
   const type = formatLine(extractSecondLineValues(content,'[equipment type]') || '')[0]
   const match = equMap.find(item=>item[0] === type.slice(2,-2))
