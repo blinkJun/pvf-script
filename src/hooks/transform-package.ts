@@ -75,6 +75,8 @@ export async function transformPackage(fileItem: string, port: number) {
     /\[booster select category\][\s\S]*?\[\/booster select category\]/g,
   )
 
+  const selectNum = extractSecondLineValues(content,'[booster selection num]')
+
   if (categoryBlocks) {
     categoryBlocks.forEach((block) => {
       // 提取数字对
@@ -121,9 +123,20 @@ export async function transformPackage(fileItem: string, port: number) {
         iconMark,
         avatarItems: avatarData,
       }
-      // console.log(fileData)
 
-      newFileList.push(createPackageItem(fileData))
+      // 如果是只允许选一个的礼盒，将时装再拆分
+      if(Number(selectNum) === 1){
+        avatarData.forEach((item,index)=>{
+          const indexName = `${fileData.name.slice(1, -1)}-${index+1}`
+          newFileList.push(createPackageItem({
+            ...fileData,
+            name:`\`${indexName}\``,
+            avatarItems:[item]
+          }))
+        })
+      }else{
+        newFileList.push(createPackageItem(fileData))
+      }
     })
   }
 
