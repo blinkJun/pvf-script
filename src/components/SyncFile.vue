@@ -108,7 +108,7 @@ const onSubmit = async (putPackage: boolean) => {
           }
         }),
       )
-      updateData.push(...res)
+      updateData.push(...res.filter(item=>item.FileContent))
       if(nextData.length === 0){
         return []
       }
