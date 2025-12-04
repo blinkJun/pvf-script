@@ -2,9 +2,9 @@
   <el-card shadow="always" :body-style="{ padding: '20px' }">
     <template #header>
       <div>
-        <span>同步勾选的文件 A 到 B</span>
+        <span>删除 A pvf 中在 Bpvf 中有的文件夹</span>
         <p class="tips">
-          纯粹的同步文件，不会有其他操作。
+          根据选中的文件判断哪些文件夹是多余的
         </p>
       </div>
     </template>
@@ -40,7 +40,7 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :loading="loading" @click="onSubmit">同步</el-button>
+        <el-button type="primary" :loading="loading" @click="onSubmit">删除</el-button>
         <!-- <el-button type="primary" :loading="loading" @click="onSubmit(true)">同步并上架（请确认是礼包）</el-button> -->
       </el-form-item>
     </el-form>
@@ -49,6 +49,8 @@
 <script setup lang="ts">
 import { reactive, ref, defineOptions } from 'vue'
 import {
+  deleteFiles,
+  getFolderFiles,
   getSelectedFiles,
   filListToLstRows,
   getFileContent,
@@ -62,7 +64,7 @@ import { ElNotification } from 'element-plus'
 import { putPackages } from '@/hooks/put-package'
 import { transformPackageAndEquId } from '@/hooks/transform-equ-id'
 defineOptions({
-  name: '同步文件',
+  name: '删除文件',
 })
 const resTypeList = [
   {
@@ -88,48 +90,51 @@ const onSubmit = async (putPackage: boolean) => {
   // 获取当前勾选的文件
   let files:string[] = []
   if(form.resType === 'default'){
-    files = await getSelectedFiles(form.aPort)
+    files = await getSelectedFiles()
   }else if(form.resType === 'search'){
-    files = await getSelectedFilesBySearchResult(form.aPort)
+    files = await getSelectedFilesBySearchResult()
   }
 
   try {
-    const updateData:any[] = []
-
-    async function getData(data:any[]):Promise<any[]>{
-      const current = data.slice(0,50)
-      const nextData = data.slice(50)
+    const deleteFileList:string[] = []
+    const map:{[propName:string]:number} = {}
+    async function checkFile(data:any[]):Promise<any[]>{
+      const current = data.slice(0,1)
+      const nextData = data.slice(1)
       const res = await Promise.all(
         current.map(async (fileItem) => {
-          let content = await getFileContent(fileItem, form.aPort)
-          return {
-            FilePath: fileItem,
-            FileContent: content,
+          const folder = fileItem.split('/').slice(0,-1).join('/')
+          if(typeof map[folder] === 'undefined'){
+            const files = await getFolderFiles(folder, '.ani' , form.bPort)
+            map[folder] = files?.length || 0
           }
+          if(map[folder] !== 0){
+            deleteFileList.push(fileItem)
+          }
+          return
         }),
       )
-      updateData.push(...res.filter(item=>item.FileContent))
       if(nextData.length === 0){
         return []
       }
-      return getData(nextData)
+      return checkFile(nextData)
     }
-    async function update(list:any[]):Promise<void>{
+    async function toDeleteFiles(list:any[]):Promise<void>{
       const current = list.slice(0,50)
       const nextData = list.slice(50)
-      await updateItemContentBatch(current, form.bPort)
+      await deleteFiles(current, form.aPort)
       if(nextData.length === 0){
         return
       }
-      return update(nextData)
+      return toDeleteFiles(nextData)
     }
 
-    await getData(files)
-    await update(updateData)
+    await checkFile(files)
+    await toDeleteFiles(deleteFileList)
 
     ElNotification({
       title: '提示',
-      message: '同步成功',
+      message: '删除成功',
       duration: 0,
       type: 'success',
     })
@@ -138,7 +143,7 @@ const onSubmit = async (putPackage: boolean) => {
     console.log(error)
     ElNotification({
       title: '提示',
-      message: '同步失败',
+      message: '删除失败',
       duration: 0,
       type: 'error',
     })

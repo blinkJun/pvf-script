@@ -90,6 +90,19 @@ export const getFileContentData = async (path: string, port?: number) => {
   }
 }
 
+// 判断文件夹是否存在，适用文件
+export const getFolderFiles = async (path: string,fileType:string, port?: number) => {
+  const res = await fetch(`${getApiHost(port)}/GetFileList?dirName=${path}&returnType=0&fileType=${fileType}`)
+  const parseRes: BaseResponse<any[]> = await res.json()
+  if (!parseRes.IsError) {
+    return parseRes.Data
+  } else {
+    console.log(parseRes.Msg)
+    ElMessage.error(parseRes.Msg)
+    return null
+  }
+}
+
 // 上传文件
 export const updateItemContent = async (path: string, content: string, port?: number) => {
   const res = await fetch(`${getApiHost(port)}/ImportFile?filePath=${path}`, {
@@ -151,6 +164,22 @@ export const itemCodesToFileInfos = async (listData: LstTypeId, port?: number) =
   const res = await fetch(`${getApiHost(port)}/ItemCodesToFileInfos`, {
     method: 'POST',
     body: JSON.stringify(listData),
+  })
+  const parseRes: BaseResponse = await res.json()
+  if (!parseRes.IsError) {
+    return parseRes.Data
+  } else {
+    console.log(parseRes.Msg)
+    ElMessage.error(parseRes.Msg)
+    return null
+  }
+}
+
+// 批量删除文件
+export const deleteFiles = async (pathList: string[], port?: number) => {
+  const res = await fetch(`${getApiHost(port)}/DeleteFiles`, {
+    method: 'POST',
+    body: JSON.stringify(pathList),
   })
   const parseRes: BaseResponse = await res.json()
   if (!parseRes.IsError) {
